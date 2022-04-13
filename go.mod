@@ -1,4 +1,4 @@
-module github.com/ncruces/keyless
+module github.com/tsukumijima/Akebi
 
 go 1.16
 
