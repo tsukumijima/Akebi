@@ -1,4 +1,4 @@
-package keyless
+package main
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func GetCertificate(apiURL string, mTLS ...tls.Certificate) func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func GetKeylessServerCertificate(apiURL string, mTLS ...tls.Certificate) func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	apiURL = strings.TrimSuffix(apiURL, "/")
 
 	var client *http.Client
