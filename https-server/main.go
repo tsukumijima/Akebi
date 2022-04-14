@@ -27,5 +27,8 @@ func main() {
 	}
 
 	// serve reverse proxy
-	reverseProxy.ListenAndServeTLS("", "")
+	var err = reverseProxy.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatalln("error:", err)
+	}
 }
