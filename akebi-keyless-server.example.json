@@ -1,0 +1,34 @@
+{
+    // Domain for DNS Server
+    // For example, 192-168-1-11.local.example.com resolves to 192.168.1.11
+    "domain":          "local.example.com",
+
+    // Domain of Nameserver for local.example.com
+    // Specify value set in NS record for local.example.com
+    "nameserver":      "akebi.example.com",
+
+    // Optional: CNAME record for local.example.com
+    "cname":           "",
+
+    // HTTPS Certificate and private key for *.local.example.com
+    "certificate":     "certificates/cert.pem",
+    "master_key":      "certificates/private_key.pem",
+
+    "keyless_api": {
+        // URL of Keyless API (URL schema excluded)
+        "handler":     "akebi.example.com/",
+
+        // HTTPS Certificate and private key for akebi.example.com (Keyless API)
+        "certificate": "certificates/keyless_api/cert.pem",
+        "private_key": "certificates/keyless_api/private_key.pem",
+
+        // Optional: Client CA certificate of mTLS for akebi.example.com (Keyless API)
+        "client_ca":   ""
+    },
+
+    "letsencrypt": {
+        // Let's Encrypt account settings and private key
+        "account":     "letsencrypt/account.json",
+        "account_key": "letsencrypt/account.pem"
+    }
+}

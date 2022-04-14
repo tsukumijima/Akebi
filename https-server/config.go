@@ -1,10 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+
+	"muzzammil.xyz/jsonc"
 )
 
 var config struct {
@@ -14,14 +17,14 @@ var config struct {
 }
 
 func loadConfig() error {
-	f, err := os.Open("akebi-https-server.json")
+	path, err := os.Executable()
+	f, err := ioutil.ReadFile(filepath.Dir(path) + "/akebi-https-server.json")
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	if err := json.NewDecoder(f).Decode(&config); err != nil {
-		return fmt.Errorf("config.json: %w", err)
+	if err := jsonc.Unmarshal(f, &config); err != nil {
+		return fmt.Errorf("akebi-https-server.json: %w", err)
 	}
 
 	// check required fields

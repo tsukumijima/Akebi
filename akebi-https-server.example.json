@@ -1,0 +1,11 @@
+{
+    // Address that HTTPS server listens on.
+    // Specify 0.0.0.0:port to listen on all interfaces.
+    "listen_address":     "0.0.0.0:7000",
+
+    // URL of HTTP server to reverse proxy
+    "proxy_pass_url":     "http://localhost:7001/",
+
+    // URL of Keyless API Server
+    "keyless_server_url": "https://akebi.example.com/"
+}
