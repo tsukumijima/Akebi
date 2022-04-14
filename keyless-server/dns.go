@@ -283,7 +283,7 @@ func (r *response) sendAuthority(builder *dnsmessage.Builder) error {
 }
 
 func getIPv4(name string) net.IP {
-	if name == "local" {
+	if name == "local" || name == "localhost" {
 		return net.IPv4(127, 0, 0, 1).To4()
 	}
 
@@ -292,7 +292,7 @@ func getIPv4(name string) net.IP {
 }
 
 func getIPv6(name string) net.IP {
-	if name == "local" {
+	if name == "local" || name == "localhost" {
 		return net.IPv6loopback
 	}
 
