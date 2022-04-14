@@ -22,13 +22,13 @@ func renewCertificates() {
 			log.Print(err)
 		}
 
-		if i := strings.IndexByte(config.API.Handler, '/'); i > 0 {
-			hostname := config.API.Handler[:i]
+		if i := strings.IndexByte(config.KeylessAPI.Handler, '/'); i > 0 {
+			hostname := config.KeylessAPI.Handler[:i]
 			client.ChallengeSolvers = solvers.GetAPISolvers()
-			err := renewCertificate(client, config.API.Certificate, config.API.Key, hostname)
+			err := renewCertificate(client, config.KeylessAPI.Certificate, config.KeylessAPI.PrivateKey, hostname)
 			if err != nil {
 				log.Print(err)
-			} else if cert, err := loadCertificate(config.API.Certificate, config.API.Key, hostname); err != nil {
+			} else if cert, err := loadCertificate(config.KeylessAPI.Certificate, config.KeylessAPI.PrivateKey, hostname); err != nil {
 				log.Print(err)
 			} else {
 				httpCert.Lock()

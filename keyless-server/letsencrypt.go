@@ -72,16 +72,16 @@ func loadCertificateAndKeys() error {
 
 func loadAPI() error {
 	var hostname string
-	if i := strings.IndexByte(config.API.Handler, '/'); i > 0 {
-		hostname = config.API.Handler[:i]
+	if i := strings.IndexByte(config.KeylessAPI.Handler, '/'); i > 0 {
+		hostname = config.KeylessAPI.Handler[:i]
 	}
-	_, err := loadCertificate(config.API.Certificate, config.API.Key, hostname)
+	_, err := loadCertificate(config.KeylessAPI.Certificate, config.KeylessAPI.PrivateKey, hostname)
 	if err != nil {
 		return err
 	}
 
-	if config.API.ClientCA != "" {
-		cert, err := ioutil.ReadFile(config.API.ClientCA)
+	if config.KeylessAPI.ClientCA != "" {
+		cert, err := ioutil.ReadFile(config.KeylessAPI.ClientCA)
 		if err != nil {
 			return err
 		}

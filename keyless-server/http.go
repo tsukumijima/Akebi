@@ -26,9 +26,9 @@ var httpCert struct {
 }
 
 func httpInit() (*http.Server, error) {
-	cert, err := tls.LoadX509KeyPair(config.API.Certificate, config.API.Key)
+	cert, err := tls.LoadX509KeyPair(config.KeylessAPI.Certificate, config.KeylessAPI.PrivateKey)
 	if os.IsNotExist(err) {
-		cert.PrivateKey, err = loadKey(config.API.Key)
+		cert.PrivateKey, err = loadKey(config.KeylessAPI.PrivateKey)
 	} else if err == nil {
 		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
 	}
@@ -58,8 +58,8 @@ func httpInit() (*http.Server, error) {
 		return httpCert.Certificate, nil
 	}
 
-	if config.API.ClientCA != "" {
-		cert, err := ioutil.ReadFile(config.API.ClientCA)
+	if config.KeylessAPI.ClientCA != "" {
+		cert, err := ioutil.ReadFile(config.KeylessAPI.ClientCA)
 		if err != nil {
 			return nil, err
 		}
@@ -71,8 +71,8 @@ func httpInit() (*http.Server, error) {
 
 	var mux http.ServeMux
 	mux.Handle("/.well-known/acme-challenge/", http.HandlerFunc(solvers.HandleHTTPChallenge))
-	mux.Handle(path.Clean(config.API.Handler+"/sign"), http.HandlerFunc(signingHandler))
-	mux.Handle(path.Clean(config.API.Handler+"/certificate"), http.HandlerFunc(certificateHandler))
+	mux.Handle(path.Clean(config.KeylessAPI.Handler+"/sign"), http.HandlerFunc(signingHandler))
+	mux.Handle(path.Clean(config.KeylessAPI.Handler+"/certificate"), http.HandlerFunc(certificateHandler))
 
 	server := http.Server{
 		Handler:      &mux,
@@ -85,17 +85,17 @@ func httpInit() (*http.Server, error) {
 	return &server, nil
 }
 
-func certificateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/pem-certificate-chain")
-	http.ServeFile(w, r, config.Certificate)
+func certificateHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	responseWriter.Header().Set("Content-Type", "application/pem-certificate-chain")
+	http.ServeFile(responseWriter, request, config.Certificate)
 }
 
-func signingHandler(w http.ResponseWriter, r *http.Request) {
+func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	sendError := func(status int) {
-		http.Error(w, http.StatusText(status), status)
+		http.Error(responseWriter, http.StatusText(status), status)
 	}
 
-	query := r.URL.Query()
+	query := request.URL.Query()
 
 	key, ok := privateKeys[query.Get("key")]
 	if !ok {
@@ -118,7 +118,7 @@ func signingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var digest [65]byte
-	n, err := io.ReadFull(r.Body, digest[:])
+	n, err := io.ReadFull(request.Body, digest[:])
 	if err != io.ErrUnexpectedEOF {
 		sendError(http.StatusBadRequest)
 		return
@@ -130,8 +130,8 @@ func signingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Write(signature)
+	responseWriter.Header().Set("Content-Type", "application/octet-stream")
+	responseWriter.Write(signature)
 }
 
 func getSelfSignedCert(key crypto.PrivateKey) (*tls.Certificate, error) {

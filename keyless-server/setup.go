@@ -97,7 +97,7 @@ func setupAccount(ctx context.Context, client *acmez.Client) (acct acme.Account,
 		return acct, errors.New("did not accept Let's Encrypt ToS")
 	}
 
-	fmt.Print("Use the production API? [y/n]: ")
+	fmt.Print("Use the Let's Encrypt production API? [y/n]: ")
 	if n, _ := fmt.Scanln(&answer); n != 1 || answer != "y" {
 		client.Directory = letsencryptStaging + "directory"
 	} else {
@@ -162,19 +162,19 @@ func setupCertificateAndKeys(ctx context.Context, client *acmez.Client, acct acm
 
 func setupAPI(ctx context.Context, client *acmez.Client, acct acme.Account) error {
 	if loadAPI() == nil {
-		fmt.Println("Using the existing API certificates and key.")
+		fmt.Println("Using the existing Keyless API certificates and key.")
 		return nil
 	}
 
 	var hostname string
 	app := filepath.Base(os.Args[0])
-	if i := strings.IndexByte(config.API.Handler, '/'); i > 0 {
-		hostname = config.API.Handler[:i]
+	if i := strings.IndexByte(config.KeylessAPI.Handler, '/'); i > 0 {
+		hostname = config.KeylessAPI.Handler[:i]
 	} else {
-		return errors.New("API handler does not have a hostname.")
+		return errors.New("Keyless API handler does not have a hostname.")
 	}
 
-	key, err := setupKey("API", config.API.Key)
+	key, err := setupKey("Keyless API", config.KeylessAPI.PrivateKey)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func setupAPI(ctx context.Context, client *acmez.Client, acct acme.Account) erro
 	fmt.Println()
 	client.ChallengeSolvers = solvers.GetAPISolvers()
 	fmt.Printf("Obtaining a certificate for %s...\n", hostname)
-	return obtainCertificate(ctx, client, acct, key, config.API.Certificate, hostname)
+	return obtainCertificate(ctx, client, acct, key, config.KeylessAPI.Certificate, hostname)
 }
 
 func setupKey(keyName, keyFile string) (*ecdsa.PrivateKey, error) {
