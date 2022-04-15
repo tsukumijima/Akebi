@@ -18,11 +18,17 @@ import (
 	"time"
 )
 
-func GetKeylessServerCertificate(apiURL string, mTLS ...tls.Certificate) func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
+type MTLSCertificates struct {
+	ready                 bool
+	ClientCAPool          *x509.CertPool
+	ClientCertificatePair tls.Certificate
+}
+
+func GetKeylessServerCertificate(apiURL string, mTLSCertificates MTLSCertificates) func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	apiURL = strings.TrimSuffix(apiURL, "/")
 
 	var client *http.Client
-	if len(mTLS) == 0 {
+	if mTLSCertificates.ready == false {
 		client = http.DefaultClient
 	} else {
 		client = &http.Client{
@@ -30,7 +36,8 @@ func GetKeylessServerCertificate(apiURL string, mTLS ...tls.Certificate) func(in
 				Proxy:           http.ProxyFromEnvironment,
 				IdleConnTimeout: 10 * time.Minute,
 				TLSClientConfig: &tls.Config{
-					Certificates: mTLS,
+					RootCAs:      mTLSCertificates.ClientCAPool,
+					Certificates: []tls.Certificate{mTLSCertificates.ClientCertificatePair},
 				},
 			},
 			Timeout: 5 * time.Second,

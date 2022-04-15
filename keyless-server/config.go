@@ -47,31 +47,31 @@ func loadConfig() error {
 
 	// check required fields
 	if config.Domain == "" {
-		return errors.New("domain is not configured")
+		return errors.New("domain is not configured.")
 	}
 	if config.Nameserver == "" {
-		return errors.New("nameserver is not configured")
+		return errors.New("nameserver is not configured.")
 	}
 	if config.Certificate == "" {
-		return errors.New("certificate file path is not configured")
+		return errors.New("certificate file path is not configured.")
 	}
 	if config.MasterKey == "" {
-		return errors.New("master_key file path is not configured")
+		return errors.New("master_key file path is not configured.")
 	}
 	if config.KeylessAPI.Handler == "" {
-		return errors.New("keyless_api.handler is not configured")
+		return errors.New("keyless_api.handler is not configured.")
 	}
 	if config.KeylessAPI.Certificate == "" {
-		return errors.New("keyless_api.certificate file path is not configured")
+		return errors.New("keyless_api.certificate file path is not configured.")
 	}
 	if config.KeylessAPI.PrivateKey == "" {
-		return errors.New("keyless_api.private_key file path is not configured")
+		return errors.New("keyless_api.private_key file path is not configured.")
 	}
 	if config.LetsEncrypt.Account == "" {
-		return errors.New("letsencrypt.account file path is not configured")
+		return errors.New("letsencrypt.account file path is not configured.")
 	}
 	if config.LetsEncrypt.AccountKey == "" {
-		return errors.New("letsencrypt.account_key file path is not configured")
+		return errors.New("letsencrypt.account_key file path is not configured.")
 	}
 
 	return dnsConfig()

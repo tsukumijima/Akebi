@@ -20,7 +20,7 @@ func main() {
 
 	// load config data
 	if err := loadConfig(); err != nil {
-		log.Fatalln("configuration:", err)
+		log.Fatalln(errorLogPrefix+" Configuration:", err)
 	}
 
 	// setup reverse proxy
@@ -59,7 +59,15 @@ func main() {
 		Handler: reverseProxy,
 		// set GetCertificate callback
 		TLSConfig: &tls.Config{
-			GetCertificate: GetKeylessServerCertificate(config.KeylessServerURL),
+			GetCertificate: func() func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
+				if mTLSCertificates.ready == true {
+					// enable mTLS
+					return GetKeylessServerCertificate(config.KeylessServerURL, mTLSCertificates)
+				} else {
+					// disable mTLS
+					return GetKeylessServerCertificate(config.KeylessServerURL, MTLSCertificates{})
+				}
+			}(),
 		},
 	}
 
@@ -70,6 +78,7 @@ func main() {
 		var err = reverseProxyServer.ListenAndServeTLS("", "")
 		if err != nil {
 			log.Fatalln(errorLogPrefix, err)
+			return
 		}
 	}()
 
