@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"path"
 	"sync"
 	"time"
 
@@ -71,8 +70,9 @@ func httpInit() (*http.Server, error) {
 
 	var mux http.ServeMux
 	mux.Handle("/.well-known/acme-challenge/", http.HandlerFunc(solvers.HandleHTTPChallenge))
-	mux.Handle(path.Clean(config.KeylessAPI.Handler+"/sign"), http.HandlerFunc(signingHandler))
-	mux.Handle(path.Clean(config.KeylessAPI.Handler+"/certificate"), http.HandlerFunc(certificateHandler))
+	mux.Handle("/certificate", http.HandlerFunc(certificateHandler))
+	mux.Handle("/sign", http.HandlerFunc(signingHandler))
+	mux.Handle("/", http.HandlerFunc(notFoundHandler))
 
 	server := http.Server{
 		Handler:      &mux,
@@ -85,21 +85,40 @@ func httpInit() (*http.Server, error) {
 	return &server, nil
 }
 
+func sendErrorPage(responseWriter http.ResponseWriter, status int) {
+	html := `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>%s %s</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <center><h1>%s %s</h1></center>
+        <hr>
+        <center>Akebi Keyless Server (<a href="https://github.com/tsukumijima/Akebi" target="blank">https://github.com/tsukumijima/Akebi</a>)</center>
+    </body>
+    </html>
+    `
+	responseWriter.Header().Set("Content-Type", "text/html")
+	http.Error(responseWriter, fmt.Sprintf(html, status, http.StatusText(status)), status)
+}
+
 func certificateHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/pem-certificate-chain")
 	http.ServeFile(responseWriter, request, config.Certificate)
 }
 
 func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	sendError := func(status int) {
-		http.Error(responseWriter, http.StatusText(status), status)
-	}
-
 	query := request.URL.Query()
 
 	key, ok := privateKeys[query.Get("key")]
 	if !ok {
-		sendError(http.StatusNotFound)
+		sendErrorPage(responseWriter, http.StatusNotFound)
 		return
 	}
 
@@ -107,7 +126,7 @@ func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	if h := query.Get("hash"); h != "" {
 		for hash = crypto.MD4; ; hash++ {
 			if hash > crypto.BLAKE2b_512 {
-				sendError(http.StatusNotFound)
+				sendErrorPage(responseWriter, http.StatusNotFound)
 				return
 			}
 			if hash.String() == h && hash.Available() {
@@ -120,18 +139,22 @@ func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	var digest [65]byte
 	n, err := io.ReadFull(request.Body, digest[:])
 	if err != io.ErrUnexpectedEOF {
-		sendError(http.StatusBadRequest)
+		sendErrorPage(responseWriter, http.StatusBadRequest)
 		return
 	}
 
 	signature, err := key.Sign(rand.Reader, digest[:n], hash)
 	if err != nil {
-		sendError(http.StatusInternalServerError)
+		sendErrorPage(responseWriter, http.StatusInternalServerError)
 		return
 	}
 
 	responseWriter.Header().Set("Content-Type", "application/octet-stream")
 	responseWriter.Write(signature)
+}
+
+func notFoundHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	sendErrorPage(responseWriter, http.StatusNotFound)
 }
 
 func getSelfSignedCert(key crypto.PrivateKey) (*tls.Certificate, error) {

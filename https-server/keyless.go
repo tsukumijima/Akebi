@@ -87,7 +87,7 @@ func GetKeylessServerCertificate(apiURL string, mTLS ...tls.Certificate) func(in
 		}
 
 		hash := sha256.Sum256(der)
-		cert.PrivateKey = signer{
+		cert.PrivateKey = Signer{
 			pub:    cert.Leaf.PublicKey,
 			id:     base64.RawURLEncoding.EncodeToString(hash[:]),
 			api:    apiURL,
@@ -102,24 +102,24 @@ func GetKeylessServerCertificate(apiURL string, mTLS ...tls.Certificate) func(in
 	}
 }
 
-var _ crypto.Signer = signer{}
+var _ crypto.Signer = Signer{}
 
-type signer struct {
+type Signer struct {
 	pub    crypto.PublicKey
 	id     string
 	api    string
 	client *http.Client
 }
 
-func (s signer) Public() crypto.PublicKey {
-	return s.pub
+func (signer Signer) Public() crypto.PublicKey {
+	return signer.pub
 }
 
-func (s signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
+func (signer Signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
 	hash := opts.HashFunc().String()
 
-	res, err := s.client.Post(
-		s.api+"/sign?key="+url.QueryEscape(s.id)+"&hash="+url.QueryEscape(hash),
+	res, err := signer.client.Post(
+		signer.api+"/sign?key="+url.QueryEscape(signer.id)+"&hash="+url.QueryEscape(hash),
 		"application/octet-stream", bytes.NewReader(digest))
 	if err != nil {
 		return nil, fmt.Errorf("signing digest: %w", err)
