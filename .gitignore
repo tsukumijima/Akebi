@@ -23,5 +23,5 @@
 # Credentials, configuration
 *.pem
 *.json
-!*.example.json
+!example/*.json
 !.vscode/settings.json
