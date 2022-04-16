@@ -90,7 +90,7 @@ func sendErrorPage(responseWriter http.ResponseWriter, status int) {
     <!DOCTYPE html>
     <html>
     <head>
-        <title>%s %s</title>
+        <title>%d %s</title>
         <style>
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -98,14 +98,15 @@ func sendErrorPage(responseWriter http.ResponseWriter, status int) {
         </style>
     </head>
     <body>
-        <center><h1>%s %s</h1></center>
+        <center><h1>%d %s</h1></center>
         <hr>
         <center>Akebi Keyless Server (<a href="https://github.com/tsukumijima/Akebi" target="blank">https://github.com/tsukumijima/Akebi</a>)</center>
     </body>
     </html>
     `
-	responseWriter.Header().Set("Content-Type", "text/html")
-	http.Error(responseWriter, fmt.Sprintf(html, status, http.StatusText(status)), status)
+	responseWriter.WriteHeader(status) // write status code
+	responseWriter.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprintln(responseWriter, fmt.Sprintf(html, status, http.StatusText(status), status, http.StatusText(status)))
 }
 
 func certificateHandler(responseWriter http.ResponseWriter, request *http.Request) {
