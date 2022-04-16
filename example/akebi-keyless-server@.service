@@ -1,0 +1,14 @@
+[Unit]
+Description = Akebi Keyless Server Service
+Requires = network.target
+
+[Service]
+Type = notify
+Restart = on-failure
+ExecStart = /home/ubuntu/Akebi/akebi-keyless-server
+WorkingDirectory = /home/ubuntu/Akebi
+User = root
+NonBlocking = true
+
+[Install]
+WantedBy = akebi-keyless-server.socket
