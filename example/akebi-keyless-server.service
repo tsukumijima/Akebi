@@ -1,6 +1,7 @@
 [Unit]
 Description = Akebi Keyless Server Service
 Requires = network.target
+Requires = akebi-keyless-server.socket
 
 [Service]
 Type = notify
@@ -11,4 +12,4 @@ User = root
 NonBlocking = true
 
 [Install]
-WantedBy = akebi-keyless-server.socket
+WantedBy=multi-user.target
