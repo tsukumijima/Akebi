@@ -20,9 +20,15 @@ var config struct {
 		ClientCertificate    string `json:"client_certificate"`     // optional, file path
 		ClientCertificateKey string `json:"client_certificate_key"` // optional, file path
 	} `json:"mtls"`
+
+	CustomCertificate struct {
+		Certificate string `json:"certificate"` // optional, file path
+		PrivateKey  string `json:"private_key"` // optional, file path
+	} `json:"custom_certificate"`
 }
 
 var mTLSCertificate tls.Certificate
+var customCertificate tls.Certificate
 
 func loadConfig() error {
 	path, err := os.Executable()
@@ -50,6 +56,15 @@ func loadConfig() error {
 	if config.MTLS.ClientCertificate != "" && config.MTLS.ClientCertificateKey != "" {
 		// load client certificate pair
 		mTLSCertificate, err = tls.LoadX509KeyPair(config.MTLS.ClientCertificate, config.MTLS.ClientCertificateKey)
+		if err != nil {
+			return fmt.Errorf("could not open certificate file: %w", err)
+		}
+	}
+
+	// load custom certificate
+	if config.CustomCertificate.Certificate != "" && config.CustomCertificate.PrivateKey != "" {
+		// load certificate pair
+		customCertificate, err = tls.LoadX509KeyPair(config.CustomCertificate.Certificate, config.CustomCertificate.PrivateKey)
 		if err != nil {
 			return fmt.Errorf("could not open certificate file: %w", err)
 		}

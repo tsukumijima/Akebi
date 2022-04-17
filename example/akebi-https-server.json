@@ -3,15 +3,23 @@
     // Specify 0.0.0.0:port to listen on all interfaces.
     "listen_address":     "0.0.0.0:7000",
 
-    // URL of HTTP server to reverse proxy
+    // URL of HTTP server to reverse proxy.
     "proxy_pass_url":     "http://localhost:7001/",
 
-    // URL of Keyless API Server
+    // URL of Keyless API Server.
     "keyless_server_url": "https://akebi.example.com/",
 
     "mtls": {
-        // Optional: Client certificate and private key of mTLS for akebi.example.com (Keyless API)
-        "client_certificate":   "",
-        "client_certificate_key":   ""
+        // Optional: Client certificate and private key of mTLS for akebi.example.com (Keyless API).
+        "client_certificate":     "",
+        "client_certificate_key": ""
+    },
+
+    "custom_certificate": {
+        // Optional: Use your own HTTPS certificate and private key instead of Akebi Keyless Server.
+        // In this case, the value of keyless_server_url is never actually used.
+        // This is just an HTTPS reverse proxy, but it has the advantage of being able to enable HTTP/2 and making it HTTPS with the same software.
+        "certificate": "",
+        "private_key": ""
     }
 }

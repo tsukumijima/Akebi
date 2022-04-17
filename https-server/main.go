@@ -53,12 +53,17 @@ func main() {
 		return nil
 	}
 
-	// setup reverse proxy server
-	var reverseProxyServer = http.Server{
-		Addr:    config.ListenAddress,
-		Handler: reverseProxy,
-		// set GetCertificate callback
-		TLSConfig: &tls.Config{
+	// setup TLS config
+	var tlsConfig tls.Config
+	if config.CustomCertificate.Certificate != "" && config.CustomCertificate.PrivateKey != "" {
+		// use custom certificate
+		tlsConfig = tls.Config{
+			Certificates: []tls.Certificate{customCertificate},
+		}
+	} else {
+		// use keyless server
+		tlsConfig = tls.Config{
+			// set GetCertificate callback
 			GetCertificate: func() func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
 				if config.MTLS.ClientCertificate != "" && config.MTLS.ClientCertificateKey != "" {
 					// enable mTLS
@@ -68,7 +73,14 @@ func main() {
 					return GetKeylessServerCertificate(config.KeylessServerURL)
 				}
 			}(),
-		},
+		}
+	}
+
+	// setup reverse proxy server
+	var reverseProxyServer = http.Server{
+		Addr:      config.ListenAddress,
+		Handler:   reverseProxy,
+		TLSConfig: &tlsConfig,
 	}
 
 	// serve reverse proxy
