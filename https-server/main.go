@@ -60,12 +60,12 @@ func main() {
 		// set GetCertificate callback
 		TLSConfig: &tls.Config{
 			GetCertificate: func() func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
-				if mTLSCertificates.ready == true {
+				if config.MTLS.ClientCertificate != "" && config.MTLS.ClientCertificateKey != "" {
 					// enable mTLS
-					return GetKeylessServerCertificate(config.KeylessServerURL, mTLSCertificates)
+					return GetKeylessServerCertificate(config.KeylessServerURL, mTLSCertificate)
 				} else {
 					// disable mTLS
-					return GetKeylessServerCertificate(config.KeylessServerURL, MTLSCertificates{})
+					return GetKeylessServerCertificate(config.KeylessServerURL)
 				}
 			}(),
 		},

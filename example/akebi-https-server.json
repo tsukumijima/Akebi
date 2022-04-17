@@ -10,9 +10,6 @@
     "keyless_server_url": "https://akebi.example.com/",
 
     "mtls": {
-        // Optional: Client CA certificate of mTLS for akebi.example.com (Keyless API)
-        "client_ca":   "",
-
         // Optional: Client certificate and private key of mTLS for akebi.example.com (Keyless API)
         "client_certificate":   "",
         "client_certificate_key":   ""
