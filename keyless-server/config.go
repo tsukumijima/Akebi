@@ -19,6 +19,8 @@ var config struct {
 	MasterKey   string `json:"master_key"`  // required, file path
 	LegacyKeys  string `json:"legacy_keys"` // optional, file glob
 
+	IsPrivateIPRangesOnly bool `json:"is_private_ip_ranges_only"` // required
+
 	KeylessAPI struct {
 		Handler     string `json:"handler"`     // required
 		Certificate string `json:"certificate"` // required, file path

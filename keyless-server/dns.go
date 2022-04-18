@@ -282,13 +282,35 @@ func (r *response) sendAuthority(builder *dnsmessage.Builder) error {
 	return builder.SOAResource(getAuthority(r.question.Name))
 }
 
+// Tailscale assigns an address of 100.64.0.0/10 (IPv4) and fd7a:115c:a1e0:ab12::/64 (IPv6) reserved for CGNAT.
+// Reference: https://tailscale.com/kb/1015/100.x-addresses/
+func IsTailscale(ip net.IP) bool {
+	if ip4 := ip.To4(); ip4 != nil {
+		return ip4[0] == 100 && ip4[1] >= 64 && ip4[1] <= 127
+	}
+	return len(ip) == net.IPv6len &&
+		ip[0] == 0xfd && ip[1] == 0x7a && ip[2] == 0x11 && ip[3] == 0x5c &&
+		ip[4] == 0xa1 && ip[5] == 0xe0 && ip[6] == 0xab && ip[7] == 0x12
+}
+
 func getIPv4(name string) net.IP {
 	if name == "local" || name == "localhost" {
 		return net.IPv4(127, 0, 0, 1).To4()
 	}
 
 	name = strings.ReplaceAll(name, "-", ".")
-	return net.ParseIP(string(name)).To4()
+	ipv4 := net.ParseIP(string(name)).To4()
+	if ipv4 == nil {
+		return nil
+	}
+
+	if config.IsPrivateIPRangesOnly == true {
+		if !ipv4.IsLoopback() && !ipv4.IsPrivate() && !ipv4.IsLinkLocalUnicast() && !IsTailscale(ipv4) {
+			return nil
+		}
+	}
+
+	return ipv4
 }
 
 func getIPv6(name string) net.IP {
@@ -297,7 +319,18 @@ func getIPv6(name string) net.IP {
 	}
 
 	name = strings.ReplaceAll(name, "-", ":")
-	return net.ParseIP(string(name))
+	ipv6 := net.ParseIP(string(name))
+	if ipv6 == nil {
+		return nil
+	}
+
+	if config.IsPrivateIPRangesOnly == true {
+		if !ipv6.IsLoopback() && !ipv6.IsPrivate() && !ipv6.IsLinkLocalUnicast() && !IsTailscale(ipv6) {
+			return nil
+		}
+	}
+
+	return ipv6
 }
 
 func getAuthority(name dnsmessage.Name) (dnsmessage.ResourceHeader, dnsmessage.SOAResource) {

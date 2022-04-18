@@ -14,6 +14,10 @@
     "certificate": "certificates/cert.pem",
     "master_key":  "certificates/private_key.pem",
 
+    // Limit DNS resolves to private IP ranges only.
+    // This includes IP range (100.64.0.0/10, fd7a:115c:a1e0:ab12::/64) used by Tailscale.
+    "is_private_ip_ranges_only": true,
+
     "keyless_api": {
         // URL of Keyless API (URL schema excluded).
         "handler":     "akebi.example.com/",
