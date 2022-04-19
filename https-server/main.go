@@ -86,6 +86,11 @@ func main() {
 	// serve reverse proxy
 	go func() {
 		log.Println(infoLogPrefix, "Starting HTTPS reverse proxy server...")
+		if config.CustomCertificate.Certificate != "" && config.CustomCertificate.PrivateKey != "" {
+			log.Println(infoLogPrefix, "Use custom HTTPS certificate and private key.")
+		} else if config.MTLS.ClientCertificate != "" && config.MTLS.ClientCertificateKey != "" {
+			log.Println(infoLogPrefix, "Use mTLS client certificate and private key for "+config.KeylessServerURL+".")
+		}
 		log.Printf("%s Listening on %s, Proxing %s.", infoLogPrefix, config.ListenAddress, config.ProxyPassURL)
 		var err = reverseProxyServer.ListenAndServeTLS("", "")
 		if err != nil {
