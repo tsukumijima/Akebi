@@ -117,12 +117,14 @@ func certificateHandler(responseWriter http.ResponseWriter, request *http.Reques
 func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	query := request.URL.Query()
 
+	// get the private key that matches the Base64-encoded SHA-256 hash of the certificate in DER format
 	key, ok := privateKeys[query.Get("key")]
 	if !ok {
 		sendErrorPage(responseWriter, http.StatusNotFound)
 		return
 	}
 
+	// get the type of hash function (e.g. SHA-256)
 	var hash crypto.Hash
 	if h := query.Get("hash"); h != "" {
 		for hash = crypto.MD4; ; hash++ {
@@ -137,6 +139,7 @@ func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	// read the digest value
 	var digest [65]byte
 	n, err := io.ReadFull(request.Body, digest[:])
 	if err != io.ErrUnexpectedEOF {
@@ -144,6 +147,7 @@ func signingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// sign the digest value with the private key
 	signature, err := key.Sign(rand.Reader, digest[:n], hash)
 	if err != nil {
 		sendErrorPage(responseWriter, http.StatusInternalServerError)

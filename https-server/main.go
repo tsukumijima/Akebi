@@ -12,11 +12,11 @@ import (
 	"github.com/fatih/color"
 )
 
-func main() {
+// log prefix (escape sequence)
+var infoLogPrefix = color.GreenString("Info") + ": "
+var errorLogPrefix = color.RedString("Error") + ":"
 
-	// log prefix (escape sequence)
-	var infoLogPrefix = color.GreenString("Info") + ": "
-	var errorLogPrefix = color.RedString("Error") + ":"
+func main() {
 
 	// load config data
 	if err := loadConfig(); err != nil {

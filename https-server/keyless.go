@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -86,6 +87,7 @@ func GetKeylessServerCertificate(apiURL string, mTLSCertificate ...tls.Certifica
 			return nil, fmt.Errorf("fetching certificate: %w", err)
 		}
 
+		// initialize Signer
 		hash := sha256.Sum256(der)
 		cert.PrivateKey = Signer{
 			pub:    cert.Leaf.PublicKey,
@@ -118,6 +120,10 @@ func (signer Signer) Public() crypto.PublicKey {
 func (signer Signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
 	hash := opts.HashFunc().String()
 
+	// send signing request
+	// "key" parameter is Base64-encoded SHA-256 hash of the certificate in DER format.
+	// "hash" parameter is string that represents the type of hash function (e.g. SHA-256)
+	// example of URL: https://akebi.example.com/sign?key=pyrfaV5udNlWgp5ZSSSHVRd8nDQ5yp8ILTiU_CVXmRk&hash=SHA-256
 	res, err := signer.client.Post(
 		signer.api+"/sign?key="+url.QueryEscape(signer.id)+"&hash="+url.QueryEscape(hash),
 		"application/octet-stream", bytes.NewReader(digest))
@@ -130,10 +136,13 @@ func (signer Signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts)
 		return nil, fmt.Errorf("signing digest: %s", res.Status)
 	}
 
+	// read the signature
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("signing digest: %w", err)
 	}
+
+	log.Println(infoLogPrefix, "Obtained signature from Keyless API Server.")
 
 	return data, nil
 }

@@ -44,7 +44,7 @@ func loadConfig() error {
 	// parse arguments
 	argument1 := flag.String("listen-address", "", "Address that HTTPS server listens on.\nSpecify 0.0.0.0:port to listen on all interfaces.")
 	argument2 := flag.String("proxy-pass-url", "", "URL of HTTP server to reverse proxy.")
-	argument3 := flag.String("keyless-server-url", "", "URL of HTTP server to reverse proxy.")
+	argument3 := flag.String("keyless-server-url", "", "URL of Keyless API Server.")
 	argument4 := flag.String("mtls-client-certificate", "", "Optional: Client certificate of mTLS for akebi.example.com (Keyless API).")
 	argument5 := flag.String("mtls-client-certificate-key", "", "Optional: Client private key of mTLS for akebi.example.com (Keyless API).")
 	argument6 := flag.String("custom-certificate", "", "Optional: Use your own HTTPS certificate instead of Akebi Keyless Server.")
