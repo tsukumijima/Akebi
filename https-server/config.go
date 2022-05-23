@@ -13,8 +13,8 @@ import (
 )
 
 var config struct {
-	ListenAddress    string `json:"listen_address"`     // required, example: 0.0.0.0:7000
-	ProxyPassURL     string `json:"proxy_pass_url"`     // required, example: http://localhost:7001/
+	ListenAddress    string `json:"listen_address"`     // required, example: 0.0.0.0:3000
+	ProxyPassURL     string `json:"proxy_pass_url"`     // required, example: http://localhost:3001/
 	KeylessServerURL string `json:"keyless_server_url"` // required, example: https://akebi.example.com/
 
 	MTLS struct {
