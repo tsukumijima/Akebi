@@ -8,11 +8,9 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -41,23 +39,30 @@ func GetKeylessServerCertificate(apiURL string, mTLSCertificate ...tls.Certifica
 	return func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
 		// require SNI
 		if info.ServerName == "" {
-			return nil, errors.New("fetching certificate: missing server name")
+			error_log("Fetching certificate: missing server name")
+			return nil, nil
 		}
 
 		// fetch certificate
 		res, err := client.Get(apiURL + "/certificate?" + url.QueryEscape(info.ServerName))
 		if err != nil {
-			return nil, fmt.Errorf("fetching certificate: %w", err)
+			log := fmt.Sprintf("Fetching certificate: %s", err)
+			error_log(log)
+			return nil, err
 		}
 		defer res.Body.Close()
 
 		if res.StatusCode != 200 {
-			return nil, fmt.Errorf("fetching certificate: %s", res.Status)
+			log := fmt.Sprintf("Fetching certificate: %s", res.Status)
+			error_log(log)
+			return nil, nil
 		}
 
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return nil, fmt.Errorf("fetching certificate: %w", err)
+			log := fmt.Sprintf("Fetching certificate: %s", err)
+			error_log(log)
+			return nil, err
 		}
 
 		// decode certificate
@@ -74,17 +79,22 @@ func GetKeylessServerCertificate(apiURL string, mTLSCertificate ...tls.Certifica
 		}
 
 		if len(cert.Certificate) == 0 {
-			return nil, errors.New("fetching certificate: no certificates returned")
+			error_log("Fetching certificate: no certificates returned")
+			return nil, nil
 		}
 
 		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
 		if err != nil {
-			return nil, fmt.Errorf("fetching certificate: %w", err)
+			log := fmt.Sprintf("Fetching certificate: %s", err)
+			error_log(log)
+			return nil, err
 		}
 
 		der, err := x509.MarshalPKIXPublicKey(cert.Leaf.PublicKey)
 		if err != nil {
-			return nil, fmt.Errorf("fetching certificate: %w", err)
+			log := fmt.Sprintf("Fetching certificate: %s", err)
+			error_log(log)
+			return nil, err
 		}
 
 		// initialize Signer
@@ -97,7 +107,9 @@ func GetKeylessServerCertificate(apiURL string, mTLSCertificate ...tls.Certifica
 		}
 
 		if err := info.SupportsCertificate(&cert); err != nil {
-			return nil, fmt.Errorf("fetching certificate: %w", err)
+			log := fmt.Sprintf("Fetching certificate: %s", err)
+			error_log(log)
+			return nil, err
 		}
 
 		return &cert, nil
@@ -128,21 +140,27 @@ func (signer Signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts)
 		signer.api+"/sign?key="+url.QueryEscape(signer.id)+"&hash="+url.QueryEscape(hash),
 		"application/octet-stream", bytes.NewReader(digest))
 	if err != nil {
-		return nil, fmt.Errorf("signing digest: %w", err)
+		log := fmt.Sprintf("Signing digest: %s", err)
+		error_log(log)
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("signing digest: %s", res.Status)
+		log := fmt.Sprintf("Signing digest: %s", err)
+		error_log(log)
+		return nil, err
 	}
 
 	// read the signature
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("signing digest: %w", err)
+		log := fmt.Sprintf("Signing digest: %s", err)
+		error_log(log)
+		return nil, err
 	}
 
-	log.Println(infoLogPrefix, "Obtained signature from Keyless API Server.")
+	info_log("Obtained signature from keyless api server.")
 
 	return data, nil
 }

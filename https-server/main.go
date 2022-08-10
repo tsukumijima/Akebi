@@ -2,26 +2,47 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/fatih/color"
 )
 
-// log prefix (escape sequence)
-var infoLogPrefix = color.GreenString("Info") + ": "
-var errorLogPrefix = color.RedString("Error") + ":"
+// logging
+func info_log(logs ...any) {
+	now := time.Now()
+	fmt.Print(now.Format("[2006/01/02 15:04:05] "), color.GreenString("INFO"), ":     ")
+	for _, log := range logs {
+		fmt.Print(log, " ")
+	}
+	fmt.Print("\n")
+}
+func error_log(logs ...any) {
+	now := time.Now()
+	fmt.Print(now.Format("[2006/01/02 15:04:05] "), color.RedString("ERROR"), ":    ")
+	for _, log := range logs {
+		fmt.Print(log, " ")
+	}
+	fmt.Print("\n")
+}
 
 func main() {
 
 	// load config data
 	if err := loadConfig(); err != nil {
-		log.Fatalln(errorLogPrefix+" Configuration:", err)
+		error_log("Configuration:", err)
+		return
 	}
+
+	// suppress standard logger output
+	log.SetOutput(ioutil.Discard)
 
 	// setup reverse proxy
 	var proxyPassURL, _ = url.Parse(config.ProxyPassURL)
@@ -41,15 +62,15 @@ func main() {
 		}
 
 		// print access log
-		log.Printf(
-			"%s %s - \"%s %s %s\" %s",
-			infoLogPrefix,
+		log := fmt.Sprintf(
+			"%s - \"%s %s %s\" %s",
 			response.Request.RemoteAddr,
 			response.Request.Method,
 			response.Request.URL.Path,
 			response.Request.Proto,
 			statusCodeText,
 		)
+		info_log(log)
 		return nil
 	}
 
@@ -85,16 +106,17 @@ func main() {
 
 	// serve reverse proxy
 	go func() {
-		log.Println(infoLogPrefix, "Starting HTTPS reverse proxy server...")
+		info_log("Starting https reverse proxy server...")
 		if config.CustomCertificate.Certificate != "" && config.CustomCertificate.PrivateKey != "" {
-			log.Println(infoLogPrefix, "Use custom HTTPS certificate and private key.")
+			info_log("Use custom https certificate and private key.")
 		} else if config.MTLS.ClientCertificate != "" && config.MTLS.ClientCertificateKey != "" {
-			log.Println(infoLogPrefix, "Use mTLS client certificate and private key for "+config.KeylessServerURL+".")
+			info_log("Use mTLS client certificate and private key for " + config.KeylessServerURL + ".")
 		}
-		log.Printf("%s Listening on %s, Proxing %s.", infoLogPrefix, config.ListenAddress, config.ProxyPassURL)
+		log := fmt.Sprintf("Listening on %s, Proxying %s.", config.ListenAddress, config.ProxyPassURL)
+		info_log(log)
 		var err = reverseProxyServer.ListenAndServeTLS("", "")
 		if err != nil {
-			log.Fatalln(errorLogPrefix, err)
+			error_log(err)
 			return
 		}
 	}()
@@ -105,5 +127,5 @@ func main() {
 
 	// When Ctrl+C is pressed
 	<-quit
-	defer log.Println(infoLogPrefix, "Terminated HTTPS reverse proxy server.")
+	defer info_log("Terminated https reverse proxy server.")
 }
