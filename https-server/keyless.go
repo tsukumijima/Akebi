@@ -53,7 +53,7 @@ func GetKeylessServerCertificate(apiURL string, mTLSCertificate ...tls.Certifica
 		defer res.Body.Close()
 
 		if res.StatusCode != 200 {
-			log := fmt.Sprintf("Fetching certificate: %s", res.Status)
+			log := fmt.Sprintf("Fetching certificate: keyless api server returned returned http error: %s", res.Status)
 			error_log(log)
 			return nil, nil
 		}
