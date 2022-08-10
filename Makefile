@@ -13,10 +13,10 @@ endif
 build-https-server-all-platforms:
 	@echo "HTTPS Server: Building Windows Build..."
 	@GOARCH=amd64 GOOS="windows" go build -ldflags="-s -w" -a -o "akebi-https-server.exe" "./https-server/"
-	@echo "HTTPS Server: Building Linux (amd64) Build..."
-	@GOARCH=amd64 GOOS="linux" go build -ldflags="-s -w" -a -o "akebi-https-server-amd64" "./https-server/"
+	@echo "HTTPS Server: Building Linux (x64) Build..."
+	@GOARCH=amd64 GOOS="linux" go build -ldflags="-s -w" -a -o "akebi-https-server" "./https-server/"
 	@echo "HTTPS Server: Building Linux (arm64) Build..."
-	@GOARCH=arm64 GOOS="linux" go build -ldflags="-s -w" -a -o "akebi-https-server-arm64" "./https-server/"
+	@GOARCH=arm64 GOOS="linux" go build -ldflags="-s -w" -a -o "akebi-https-server-arm" "./https-server/"
 
 # currently, linux and systemd combination only
 build-keyless-server:

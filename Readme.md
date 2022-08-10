@@ -330,13 +330,13 @@ $ cd Akebi
 $ make build-https-server
 
 # すべてのプラットフォーム向けにビルド
-# Windows (64bit), Linux (amd64), Linux (arm64) 向けの実行ファイルを一度にクロスコンパイルする
+# Windows (64bit), Linux (x64), Linux (arm64) 向けの実行ファイルを一度にクロスコンパイルする
 $ make build-https-server-all-platforms
 ```
 
 - Windows: `akebi-keyless-server.exe`
-- Linux (amd64): `akebi-keyless-server-amd64` (拡張子なし)
-- Linux (arm64): `akebi-keyless-server-arm64` (拡張子なし)
+- Linux (x64): `akebi-keyless-server` (拡張子なし)
+- Linux (arm64): `akebi-keyless-server-arm` (拡張子なし)
 
 ビルドされた実行ファイルは、それぞれ Makefile と同じフォルダに出力されます。  
 出力されるファイル名は上記の通りです。適宜リネームしても構いません。
