@@ -4,19 +4,19 @@ MAKEFLAGS += --no-print-directory
 build-https-server:
 	@echo "HTTPS Server: Building..."
 ifeq ($(OS),Windows_NT)
-	@powershell replace_net_http.ps1
+	@powershell -ExecutionPolicy RemoteSigned -File .\replace_net_http.ps1
 	@go build -ldflags="-s -w" -a -v -o "akebi-https-server.exe" "./https-server/"
 else
-	@sudo bash replace_net_http.sh
+	@sudo bash ./replace_net_http.sh
 	@go build -ldflags="-s -w" -a -v -o "akebi-https-server" "./https-server/"
 endif
 
 # build executables for all platforms
 build-https-server-all-platforms:
 ifeq ($(OS),Windows_NT)
-	@powershell replace_net_http.ps1
+	@powershell -ExecutionPolicy RemoteSigned -File .\replace_net_http.ps1
 else
-	@sudo bash replace_net_http.sh
+	@sudo bash ./replace_net_http.sh
 endif
 	@echo "HTTPS Server: Building Windows Build..."
 	@GOARCH=amd64 GOOS="windows" go build -ldflags="-s -w" -a -v -o "akebi-https-server.exe" "./https-server/"
