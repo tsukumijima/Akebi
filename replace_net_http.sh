@@ -22,4 +22,9 @@ else
   sed -i "s|${search_str}|${replace_str}|g" "$server_go_file"
 fi
 
-echo "Replaced strings in ${server_go_file}"
+# 実際に置換されたかどうか確認するために、置換前の文字列がないことを確認する
+if grep -q "${search_str}" "${server_go_file}"; then
+  echo "Failed to replace strings in ${server_go_file}"
+  exit 1
+fi
+echo "Successfully replaced strings in ${server_go_file}"

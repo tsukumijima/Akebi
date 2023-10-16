@@ -15,5 +15,9 @@ $replace_str = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Automati
 # 文字列を置換
 (Get-Content $server_go_file) -replace [regex]::Escape($search_str), $replace_str | Set-Content $server_go_file
 
-# 確認メッセージ
-Write-Host "Replaced strings in $server_go_file"
+# 実際に置換されたかどうか確認するために、置換前の文字列がないことを確認する
+if ((Get-Content $server_go_file) -match $search_str) {
+    Write-Host "Failed to replace strings in $server_go_file"
+    exit 1
+}
+Write-Host "Successfully replaced strings in $server_go_file"
