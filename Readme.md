@@ -36,7 +36,7 @@ Keyless Server のコードの大半と HTTPS Server の TLS ハンドシェイ�
 
 すでに PWA の主要機能である Service Worker や Web Push API などをはじめ、近年追加された多くの Web API の利用に（中には WebCodecs API のような HTTPS 化を必須にする必要が皆無なものも含めて）**HTTPS が必須になってしまっています。**
 
-> **Note**
+> [!NOTE]  
 > 正確には **[安全なコンテキスト (Secure Contexts)](https://developer.mozilla.org/ja/docs/Web/Security/Secure_Contexts)** でないと動作しないようになっていて、特別に localhost (127.0.0.1) だけは http:// でも安全なコンテキストだと認められるようになっています。
 
 プライベート Web サイトであっても、たとえばビデオチャットのために [getUserMedia()](https://developer.mozilla.org/ja/docs/Web/API/MediaDevices/getUserMedia) を、クリップボードにコピーするために [Clipboard API](https://developer.mozilla.org/ja/docs/Web/API/Clipboard_API) を使いたい要件が出てくることもあるでしょう（どちらも Secure Contexts が必須です）。  
@@ -55,7 +55,7 @@ Keyless Server のコードの大半と HTTPS Server の TLS ハンドシェイ�
 
 こうした変更は、公開 Web サイトからローカル LAN 上にあるデバイスを操作する類のアプリケーションにとって、かなり厳しい制約になります。
 
-> **Note**  
+> [!NOTE]  
 > Chrome 105 以降では、Public (HTTPS) -> Private (HTTPS) のアクセスには、さらにプライベート Web サイト側のレスポンスに `Access-Control-Allow-Private-Network` ヘッダーを付与する必要があるようです ([参考](https://developer.chrome.com/blog/private-network-access-preflight/))。  
 > Chrome 105 以降も公開 Web サイトからプライベート Web サイトにアクセスするには両方の HTTPS 化が必須で、加えて Preflight リクエストが飛んできたときに `Access-Control-Allow-Private-Network: true` を返せる必要が出てきます。
 
@@ -104,7 +104,7 @@ DNS 認証ならインターネットからアクセスできる必要はなく�
 
 このワイルドカード DNS サービスと取得したワイルドカード証明書を組み合わせれば、**`http://192.168.1.11:3000/` の代わりに `https://192-168-1-11.local.example.com:3000/` にアクセスするだけで、魔法のように正規の証明書でリッスンされるプライベート HTTPS サイトができあがります！**
 
-> **Note**
+> [!NOTE]  
 > 『ワイルドカード DNS と Let's Encrypt のワイルドカード証明書を組み合わせてローカル LAN で HTTPS サーバーを実現する』というアイデアは、[Corollarium](https://github.com/Corollarium) 社開発の [localtls](https://github.com/Corollarium/localtls) から得たものです。
 
 ### 証明書と秘密鍵の扱い
@@ -123,7 +123,7 @@ DNS 認証ならインターネットからアクセスできる必要はなく�
 
 **この「秘密鍵の扱いをどうするか」問題を、TLS ハンドシェイクの内部処理をハックし秘密鍵をリモートサーバーに隠蔽することで解決させた点が、Akebi HTTPS Server の最大の特徴です。**
 
-> **Note**
+> [!NOTE]  
 > 証明書も TLS ハンドシェイク毎に Keyless Server からダウンロードするため、保存した証明書の更新に悩む必要がありません。
 
 秘密鍵をリモートサーバーに隠蔽するためには、TLS ハンドシェイク上で秘密鍵を使う処理を、サーバー上で代わりに行う API サーバーが必要になります。  
@@ -131,7 +131,7 @@ DNS 認証ならインターネットからアクセスできる必要はなく�
 
 私がこの keyless をもとに若干改良したものが Akebi Keyless Server で、Akebi HTTPS Server とペアで1つのシステムを構成しています。
 
-> **Note**  
+> [!NOTE]  
 > HTTPS リバースプロキシの形になっているのは、**HTTPS 化対象のアプリケーションがどんな言語で書かれていようと HTTP サーバーのリバースプロキシとして挟むだけで HTTPS 化できる汎用性の高さ**と、**そもそも TLS ハンドシェイクの深い部分の処理に介入できるのが Golang くらいしかなかった**のが理由です。  
 > 詳細は [HTTPS リバースプロキシというアプローチ](#https-リバースプロキシというアプローチ) の項目で説明しています。
 
@@ -318,7 +318,7 @@ Keyless Server サービスを終了したい際は、以上のコマンドを�
 
 HTTPS Server のビルドには、Go 1.18 と make がインストールされている環境が必要です。ここではすでにインストールされているものとして説明します。  
 
-> **Note**
+> [!NOTE]  
 > Windows 版の make は [こちら](http://gnuwin32.sourceforge.net/packages/make.htm) からインストールできます。  
 > 2006 年から更新されていませんが、Windows 10 でも普通に動作します。それだけ完成されたアプリケーションなのでしょう。
 
@@ -377,13 +377,13 @@ $ ./akebi-https-server
 HTTPS Server は Ctrl + C で終了できます。  
 設定内容にエラーがあるときはログが表示されるので、それを確認してみてください。
 
-> **Note**
+> [!NOTE]  
 > ドメインの本来 IP アドレスを入れる部分に **`my` / `local` / `localhost` と入れると、特別に 127.0.0.1（ループバックアドレス）に名前解決されるように設定しています。**  
 `127-0-0-1.local.example.com` よりもわかりやすいと思います。ローカルで開発する際にお使いください。
 
 **HTTPS Server は HTTP/2 に対応しています。** HTTP/2 は HTTPS でしか使えませんが、サイトを HTTPS 化することで、同時に HTTP/2 に対応できます。
 
-> **Note**
+> [!NOTE]  
 > どちらかと言えば、Golang の標準 HTTP サーバー ([http.Server](https://pkg.go.dev/net/http#Server)) が何も設定しなくても HTTP/2 に標準対応していることによるものです。
 
 カスタムの証明書/秘密鍵を指定できるのも、Keyless Server を使わずに各自用意した証明書で HTTPS 化するケースと実装を共通化できるのもありますが、**HTTPS Server を間に挟むだけでかんたんに HTTP/2 に対応できる**のが大きいです。
@@ -442,7 +442,7 @@ Keyless SSL では、秘密鍵を社外に出せない企業側が「Key Server�
 
 この Keyless SSL の **「秘密鍵がなくても、証明書と Key Server さえあれば HTTPS 化できる」** という特徴を、同じく秘密鍵を公開できない今回のユースケースに適用したものが、ncruces 氏が開発された [keyless](https://github.com/ncruces/keyless) です。
 
-> **Note**
+> [!NOTE]  
 > 前述しましたが、Akebi Keyless Server は keyless のサーバー部分のコードのフォークです。
 
 **Keyless SSL の「Key Server」に相当するものが、Keyless Server がリッスンしている API サーバーです。**（以下、Keyless API と呼称）  
@@ -452,7 +452,7 @@ Keyless SSL では、秘密鍵を社外に出せない企業側が「Key Server�
 keyless の作者の [ncruces 氏によれば](https://github.com/cunnie/sslip.io/issues/6#issuecomment-778914231)、Keyless SSL と異なり、「問題を単純化するため」鍵交換アルゴリズムは DHE 法 (ECDHE)、公開鍵/秘密鍵は ECDSA 鍵のみに対応しているとのこと。  
 Keyless Server のセットアップで生成された秘密鍵のサイズが小さいのはそのためです（ECDSA は RSA よりも鍵長が短い特徴があります）。
 
-> **Note**
+> [!NOTE]  
 > 図だけを見れば RSA 鍵交換アルゴリズムの方が単純に見えますが、ECDHE with ECDSA の方が新しく安全で速いそうなので、それを加味して選定したのかもしれません。
 
 Keyless SSL とは手法こそ同様ですが、**Key Server との通信プロトコルは異なるため（keyless では大幅に簡略化されている）、Keyless SSL と互換性があるわけではありません。**
@@ -535,7 +535,7 @@ Apache や NGINX を一般的な PC に配布するアプリケーションに�
 
 HTTPS 化にあたっては、**今までの `http://192.168.1.11:3000/` のような IP アドレス直打ちの URL が使えなくなり、代わりに `https://192-168-1-11.local.example.com:3000/` のような URL でアクセスする必要がある点を、ユーザーに十分に周知させる必要があります。**  
 
-> **Note** 一応 `https://192.168.1.11:3000/` でも使えなくはないですが、言うまでもなく証明書エラーが表示されます。
+> [!NOTE] 一応 `https://192.168.1.11:3000/` でも使えなくはないですが、言うまでもなく証明書エラーが表示されます。
 
 プライベート IP アドレスや mDNS のようなローカル LAN だけで有効なドメイン (例: `my-computer.local`) には正規の HTTPS 証明書を発行できないため、<u>**プライベート Web サイトで本物の HTTPS 証明書を使うには、いずれにせよインターネット上で有効なドメインにせざるを得ません。**</u>
 
@@ -543,7 +543,7 @@ HTTPS 化にあたっては、**今までの `http://192.168.1.11:3000/` のよ�
 ただ、**この URL 変更は十分に破壊的な変更になりえます。** 特にユーザーの多いプロダクトであれば、慎重に進めるべきでしょう。  
 もしこの破壊的な変更を受け入れられないプロダクトであれば、HTTP でのアクセスを並行してサポートするか、正規の HTTPS 証明書を使うのを諦めるほかありません。
 
-> **Note**
+> [!NOTE]  
 > HTTP・HTTPS を両方サポートできる（HTTP アクセスでは HTTPS を必要とする機能を無効化する）リソースがあるのなら、並行して HTTP アクセスをサポートするのもありです。
 
 私のユースケースでは、HTTPS 化によって得られるメリットが URL 変更のデメリットを上回ると判断して、Akebi の採用を決めました。メリットとデメリットを天秤にかけて、採用するかどうかを考えてみてください。  
@@ -570,7 +570,7 @@ HTTP/2 対応によって爆速になる、ということはあまりないと�
 
 カスタム証明書/秘密鍵を使いたい具体的なユースケースとして、**[Tailscale の HTTPS 有効化機能](https://tailscale.com/kb/1153/enabling-https/) を利用するケースが考えられます。**
 
-> **Note**
+> [!NOTE]  
 > Tailscale は、P2P 型のメッシュ VPN をかんたんに構築できるサービスです。
 > Tailscale に接続していれば、どこからでもほかの Tailscale に接続されているデバイスにアクセスできます。
 
