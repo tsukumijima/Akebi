@@ -7,24 +7,52 @@
 go_path=$(go env GOROOT)
 server_go_file="${go_path}/src/net/http/server.go"
 
+# ファイルが存在することを確認
+if [ ! -f "$server_go_file" ]; then
+  echo "Error: File $server_go_file does not exist"
+  exit 1
+fi
+
 # 置換する文字列
 search_str="Client sent an HTTP request to an HTTPS server."
 
 # 置換後のエスケープ済み HTML
 replace_str="<!DOCTYPE html><html><head><meta charset=\\'UTF-8\\'><title>Automatically jump to HTTPS</title><script>window.location.replace(window.location.href.replace(\\'http:\\/\\/', \\'https:\\/\\/'));<\\/script><\\/head><body><\\/body><\\/html>"
 
-# 文字列を置換 (GNU sed と BSD sed の両方に対応)
+# 一時ファイルを作成
+temp_file=$(mktemp)
+
+# ファイルを一時ファイルにコピー
+cp "$server_go_file" "$temp_file"
+
+# 一時ファイルで置換を実行
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  sed -i '' "s|${search_str}|${replace_str}|g" "$server_go_file"
+  sed -i '' "s|${search_str}|${replace_str}|g" "$temp_file"
 else
   # Linux
-  sed -i "s|${search_str}|${replace_str}|g" "$server_go_file"
+  sed -i "s|${search_str}|${replace_str}|g" "$temp_file"
 fi
 
-# 実際に置換されたかどうか確認するために、置換前の文字列がないことを確認する
-if grep -q "${search_str}" "${server_go_file}"; then
-  echo "Failed to replace strings in ${server_go_file}"
+# 置換が成功したか確認
+if grep -q "${search_str}" "$temp_file"; then
+  echo "Failed to replace strings in temporary file"
+  rm "$temp_file"
   exit 1
 fi
+
+# 元のファイルに書き込み権限を付与
+chmod u+w "$server_go_file" 2>/dev/null || true
+
+# 一時ファイルを元の場所にコピー
+if ! cp "$temp_file" "$server_go_file"; then
+  echo "Failed to copy temporary file to ${server_go_file}"
+  echo "Try running this script with sudo"
+  rm "$temp_file"
+  exit 1
+fi
+
+# 一時ファイルを削除
+rm "$temp_file"
+
 echo "Successfully replaced strings in ${server_go_file}"
